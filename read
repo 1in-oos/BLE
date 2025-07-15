@@ -1,0 +1,26 @@
+import asyncio
+from bleak import BleakClient
+
+# 你的 BLE 设备地址
+BLE_ADDRESS = "AA:BB:CC:DD:EE:FF"  # 换成你实际的 MAC 地址
+
+# 要读取的 handle 范围
+HANDLE_START = 0x0001
+HANDLE_END = 0x000B
+
+async def main():
+    async with BleakClient(BLE_ADDRESS) as client:
+        if not client.is_connected:
+            print("连接失败")
+            return
+        
+        print(f"已连接 {BLE_ADDRESS}，读取 handle 0x{HANDLE_START:04X} 到 0x{HANDLE_END:04X}")
+        for handle in range(HANDLE_START, HANDLE_END + 1):
+            try:
+                value = await client.read_gatt_descriptor(handle)
+                print(f"Handle 0x{handle:04X}: {value.hex()}")
+            except Exception as e:
+                # 有些 handle 没有值 / 不是可读，忽略错误
+                print(f"Handle 0x{handle:04X}: 读取失败 ({e})")
+
+asyncio.run(main())
